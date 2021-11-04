@@ -1,4 +1,21 @@
 import socket
+
+HOST = '127.0.0.1' 
+PORT = 8000
+
+with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+    s.bind((HOST, PORT))
+    s.listen()
+    conn, addr = s.accept()
+    with conn:
+        print('Connected by', addr)
+        while True:
+            data = conn.recv(1024)
+            if not data:
+                break
+            conn.sendall(data)
+            
+import socket
 import select
 
 IP = "127.0.0.1"
@@ -56,16 +73,6 @@ def receive_message(client_socket):
         return False
 
 while True:
-
-    # Calls Unix select() system call or Windows select() WinSock call with three parameters:
-    #   - rlist - sockets to be monitored for incoming data
-    #   - wlist - sockets for data to be send to (checks if for example buffers are not full and socket is ready to send some data)
-    #   - xlist - sockets to be monitored for exceptions (we want to monitor all sockets for errors, so we can use rlist)
-    # Returns lists:
-    #   - reading - sockets we received some data on (that way we don't have to check sockets manually)
-    #   - writing - sockets ready for data to be send thru them
-    #   - errors  - sockets with some exceptions
-    # This is a blocking call, code execution will "wait" here and "get" notified in case any action should be taken
     read_sockets, _, exception_sockets = select.select(sockets_list, [], sockets_list)
 
 
@@ -82,10 +89,6 @@ while True:
 
             # Client should send his name right away, receive it
             user = receive_message(client_socket)
-
-            # If False - client disconnected before he sent his name
-            if user is False:
-                continue
 
             # Add accepted socket to select.select() list
             sockets_list.append(client_socket)
